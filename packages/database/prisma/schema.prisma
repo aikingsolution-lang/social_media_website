@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(uuid())
+  email          String          @unique
+  password       String?
+  name           String?
+  googleId       String?         @unique
+  githubId       String?         @unique
+  authProvider   String          @default("local")
+  resetToken       String?       @unique
+  resetTokenExpiry DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  accounts       SocialAccount[]
+  campaigns      Campaign[]
+  videos         Video[]
+  scheduledPosts ScheduledPost[]
+}
+
+model Video {
+  id             String          @id @default(uuid())
+  title          String
+  niche          String?
+  keywords       String?
+  filePath       String
+  userId         String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id])
+  scheduledPosts ScheduledPost[]
+}
+
+model SocialAccount {
+  id             String          @id @default(uuid())
+  userId         String
+  platform       String
+  accountName    String
+  accessToken    String
+  refreshToken   String?
+  platformUserId String?
+  status         String          @default("active")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id])
+  @@unique([userId, platform, platformUserId])
+  scheduledPosts ScheduledPost[]
+  tokenExpiresAt DateTime?
+}
+
+model Campaign {
+  id             String          @id @default(uuid())
+  name           String
+  startDate      DateTime
+  endDate        DateTime
+  userId         String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id])
+  scheduledPosts ScheduledPost[]
+}
+
+model ScheduledPost {
+  id             String         @id @default(uuid())
+  userId         String
+  campaignId     String?
+  videoId        String?
+  accountId      String
+  scheduledTime  DateTime
+  publishedAt    DateTime?
+  caption        String
+  status         String         @default("PENDING")
+  platform       String?
+  platformPostId String?
+  failedReason   String?
+  mediaUrl       String?
+  extraData      Json?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaign       Campaign?      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  account        SocialAccount  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  video          Video?         @relation(fields: [videoId], references: [id])
+}

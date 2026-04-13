@@ -1,0 +1,17 @@
+{
+  "name": "database",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "generate": "prisma generate",
+    "push": "prisma db push"
+  },
+  "dependencies": {
+    "@google/genai": "^1.49.0",
+    "@prisma/client": "^5.7.0",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "prisma": "^5.7.0"
+  }
+}

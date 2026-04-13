@@ -1,0 +1,23 @@
+{
+  "name": "social-automation",
+  "version": "1.0.0",
+  "description": "Full stack social automation app",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "workers",
+    "database",
+    "queues"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev": "npm run dev --workspaces"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10"
+  }
+}
