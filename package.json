@@ -18,6 +18,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/jsonwebtoken": "^9.0.10"
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.1.0",
+    "@types/nodemailer": "^8.0.0"
+  },
+  "dependencies": {
+    "bullmq": "^5.74.1",
+    "ioredis": "^5.10.1",
+    "node-cron": "^4.2.1"
   }
 }
