@@ -28,28 +28,29 @@ import uploadRoutes from "./routes/upload.routes";
 import threadsRoutes from "./routes/threads.routes";
 import scheduledInstagramRoutes from "./routes/scheduledInstagram.routes";
 
-// Queue Dashboard
-import { serverAdapter } from "../../../queues/src/dashboard";
-
-// Scheduler
-import { startScheduler } from "../../../workers/src/scheduler";
-
 const app = express();
 const port = process.env.PORT || 4000;
 
-// Important:
-// If worker already runs scheduler, do NOT start it here also,
-// otherwise jobs can be queued twice.
-const RUN_SCHEDULER_IN_API = false;
-
-if (RUN_SCHEDULER_IN_API) {
-  startScheduler();
-}
-
 // Middlewares
+const allowedOrigins = [
+  "http://localhost:3000",
+  process.env.FRONTEND_URL,
+].filter(Boolean) as string[];
+
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      if (
+        allowedOrigins.includes(origin) ||
+        allowedOrigins.includes("*")
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
@@ -102,9 +103,6 @@ app.use("/", metaRoutes);
 app.use("/api/webhooks", webhookRoutes);
 app.use("/api/scheduled-posts/instagram", scheduledInstagramRoutes);
 
-// Queue Dashboard UI (BullMQ)
-app.use("/admin/queues", serverAdapter.getRouter());
-
 // 404 handler
 app.use((_req: Request, res: Response) => {
   res.status(404).json({
@@ -124,7 +122,7 @@ app.use((err: any, _req: Request, res: Response, _next: any) => {
 });
 
 // Threads delete callback
-app.post("/threads-delete-callback", (req, res) => {
+app.post("/threads-delete-callback", (req: Request, res: Response) => {
   console.log("Delete request received:", req.body);
 
   res.status(200).json({
@@ -134,7 +132,7 @@ app.post("/threads-delete-callback", (req, res) => {
 });
 
 // Threads uninstall callback
-app.post("/threads-uninstall-callback", (req, res) => {
+app.post("/threads-uninstall-callback", (req: Request, res: Response) => {
   console.log("User uninstalled app:", req.body);
 
   res.status(200).json({
