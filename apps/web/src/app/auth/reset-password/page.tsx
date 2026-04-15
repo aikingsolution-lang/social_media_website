@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LockKeyhole, Eye, EyeOff, Mail, ShieldCheck } from "lucide-react";
 import AuthShowcase from "@/components/auth/AuthShowcase";
 import { resetPassword } from "@/lib/api";
 import Link from "next/link";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -22,7 +22,6 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // ✅ AUTO FILL EMAIL FROM URL
   useEffect(() => {
     const emailFromUrl = searchParams.get("email");
     if (emailFromUrl) {
@@ -30,7 +29,6 @@ export default function ResetPasswordPage() {
     }
   }, [searchParams]);
 
-  // ✅ AUTO REDIRECT AFTER SUCCESS
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => {
@@ -111,7 +109,6 @@ export default function ResetPasswordPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email */}
               <div>
                 <label className="text-sm text-white/70">Email</label>
                 <div className="relative">
@@ -126,7 +123,6 @@ export default function ResetPasswordPage() {
                 </div>
               </div>
 
-              {/* OTP */}
               <div>
                 <label className="text-sm text-white/70">OTP</label>
                 <div className="relative">
@@ -137,14 +133,11 @@ export default function ResetPasswordPage() {
                     className="input-dark pl-10 text-center tracking-widest"
                     placeholder="Enter 6-digit OTP"
                     value={otp}
-                    onChange={(e) =>
-                      setOtp(e.target.value.replace(/\D/g, ""))
-                    }
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                   />
                 </div>
               </div>
 
-              {/* New Password */}
               <div>
                 <label className="text-sm text-white/70">New Password</label>
                 <div className="relative">
@@ -166,7 +159,6 @@ export default function ResetPasswordPage() {
                 </div>
               </div>
 
-              {/* Confirm Password */}
               <div>
                 <label className="text-sm text-white/70">
                   Confirm Password
@@ -177,9 +169,7 @@ export default function ResetPasswordPage() {
                     className="input-dark pr-10"
                     placeholder="Confirm password"
                     value={confirmPassword}
-                    onChange={(e) =>
-                      setConfirmPassword(e.target.value)
-                    }
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                   <button
                     type="button"
@@ -208,5 +198,19 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-black text-white">
+          Loading...
+        </div>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
