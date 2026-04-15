@@ -3,15 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "generate": "prisma generate",
-    "push": "prisma db push"
+    "generate": "prisma generate --schema=prisma/schema.prisma",
+    "push": "prisma db push --schema=prisma/schema.prisma"
   },
   "dependencies": {
     "@google/genai": "^1.49.0",
-    "@prisma/client": "^5.7.0",
+    "@prisma/client": "6.16.0",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
-    "prisma": "^5.7.0"
+    "prisma": "6.16.0"
   }
 }
