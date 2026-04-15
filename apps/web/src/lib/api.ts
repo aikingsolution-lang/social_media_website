@@ -51,14 +51,27 @@ export const saveToken = (token: string) => {
 
 export const getToken = () => {
     if (typeof window !== "undefined") {
-        return localStorage.getItem("token");
+        return (
+            localStorage.getItem("token") ||
+            localStorage.getItem("accessToken") ||
+            localStorage.getItem("authToken")
+        );
     }
     return null;
+};
+
+export const isAuthenticated = (): boolean => {
+    const token = getToken();
+    if (!token) return false;
+
+    return !isTokenExpired(token);
 };
 
 export const removeToken = () => {
     if (typeof window !== "undefined") {
         localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("authToken");
     }
 };
 
@@ -140,10 +153,10 @@ export const apiFetch = async <T = any>(
 
     const finalBody =
         body &&
-            typeof body === "object" &&
-            !(body instanceof FormData) &&
-            !(body instanceof Blob) &&
-            !(body instanceof ArrayBuffer)
+        typeof body === "object" &&
+        !(body instanceof FormData) &&
+        !(body instanceof Blob) &&
+        !(body instanceof ArrayBuffer)
             ? JSON.stringify(body)
             : (body as BodyInit | null | undefined);
 
