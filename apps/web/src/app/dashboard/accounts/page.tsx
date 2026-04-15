@@ -1,7 +1,7 @@
 "use client";
 
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { Search, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
 import AccountCard from "@/components/accounts/AccountCard";
 import ConnectPlatformButtons from "@/components/accounts/ConnectPlatformButtons";
 import { deleteAccount, getAccounts } from "@/lib/api";
@@ -14,7 +14,7 @@ type Account = {
   followers?: string;
 };
 
-export default function AccountsPage() {
+function AccountsPageContent() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -79,7 +79,15 @@ export default function AccountsPage() {
         </p>
       </section>
 
-      <ConnectPlatformButtons />
+      <Suspense
+        fallback={
+          <div className="glass-card p-6 text-white/60">
+            Loading connect options...
+          </div>
+        }
+      >
+        <ConnectPlatformButtons />
+      </Suspense>
 
       <section className="glass-card p-5">
         <div className="relative">
@@ -114,5 +122,17 @@ export default function AccountsPage() {
         </section>
       )}
     </div>
+  );
+}
+
+export default function AccountsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="glass-card p-6 text-white/60">Loading accounts page...</div>
+      }
+    >
+      <AccountsPageContent />
+    </Suspense>
   );
 }
