@@ -2,20 +2,22 @@ import { Queue } from "bullmq";
 import Redis from "ioredis";
 
 const redisUrl = process.env.REDIS_URL;
-const redisHost = process.env.REDIS_HOST || "localhost";
-const redisPort = parseInt(process.env.REDIS_PORT || "6379", 10);
-const redisPassword = process.env.REDIS_PASSWORD || undefined;
 
-const connection = redisUrl
-  ? new Redis(redisUrl, {
-      maxRetriesPerRequest: null,
-    })
-  : new Redis({
-      host: redisHost,
-      port: redisPort,
-      password: redisPassword,
-      maxRetriesPerRequest: null,
-    });
+if (!redisUrl) {
+  throw new Error("REDIS_URL is not set in environment");
+}
+
+const connection = new Redis(redisUrl, {
+  maxRetriesPerRequest: null,
+});
+
+connection.on("connect", () => {
+  console.log("✅ Redis connected");
+});
+
+connection.on("error", (err) => {
+  console.error("❌ Redis connection error:", err.message);
+});
 
 const defaultJobOptions = {
   attempts: 3,
