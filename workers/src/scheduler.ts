@@ -9,9 +9,6 @@ if (!redisUrl) {
   throw new Error("REDIS_URL is not set in environment");
 }
 
-console.log("REDIS_URL exists:", !!redisUrl);
-console.log("REDIS_URL value:", redisUrl);
-
 const connection = new Redis(redisUrl, {
   maxRetriesPerRequest: null,
 });
@@ -28,6 +25,8 @@ const postQueue = new Queue("post-publishing", { connection });
 
 export const startScheduler = () => {
   console.log("🕒 Scheduler started (runs every minute)");
+  console.log("REDIS_URL exists:", !!redisUrl);
+  console.log("REDIS_URL value:", redisUrl);
 
   cron.schedule("* * * * *", async () => {
     try {

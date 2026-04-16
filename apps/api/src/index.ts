@@ -28,6 +28,9 @@ import uploadRoutes from "./routes/upload.routes";
 import threadsRoutes from "./routes/threads.routes";
 import scheduledInstagramRoutes from "./routes/scheduledInstagram.routes";
 
+// ✅ Scheduler import
+import { startScheduler } from "../../../workers/src/scheduler";
+
 const app = express();
 const port = process.env.PORT || 4000;
 
@@ -143,4 +146,11 @@ app.post("/threads-uninstall-callback", (req: Request, res: Response) => {
 // Start server
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
+
+  try {
+    startScheduler();
+    console.log("✅ Scheduler started from API server");
+  } catch (error) {
+    console.error("❌ Failed to start scheduler:", error);
+  }
 });
