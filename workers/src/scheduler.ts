@@ -134,3 +134,5 @@ export const startScheduler = () => {
     }
   });
 };
+// START SCHEDULER AUTOMATICALLY
+startScheduler();
