@@ -17,10 +17,25 @@ type PostJobData = {
   scheduledPostId: string;
 };
 
-const connection = new Redis({
-  host: process.env.REDIS_HOST || "localhost",
-  port: parseInt(process.env.REDIS_PORT || "6379", 10),
+const redisUrl = process.env.REDIS_URL;
+
+if (!redisUrl) {
+  throw new Error("REDIS_URL is not set in environment");
+}
+
+console.log("REDIS_URL exists:", !!redisUrl);
+console.log("REDIS_URL value:", redisUrl);
+
+const connection = new Redis(redisUrl, {
   maxRetriesPerRequest: null,
+});
+
+connection.on("connect", () => {
+  console.log("✅ Worker Redis connected");
+});
+
+connection.on("error", (err) => {
+  console.error("❌ Worker Redis error:", err.message);
 });
 
 const getScheduledPostMediaUrl = (scheduledPost: any): string | null => {
@@ -334,12 +349,12 @@ export const postWorker = new Worker(
             result?.publish?.id
               ? String(result.publish.id)
               : result?.publish?.post_id
-                ? String(result.publish.post_id)
-                : result?.id
-                  ? String(result.id)
-                  : result?.post_id
-                    ? String(result.post_id)
-                    : null,
+              ? String(result.publish.post_id)
+              : result?.id
+              ? String(result.id)
+              : result?.post_id
+              ? String(result.post_id)
+              : null,
           failedReason: null,
         },
       });

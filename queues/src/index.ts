@@ -7,6 +7,9 @@ if (!redisUrl) {
   throw new Error("REDIS_URL is not set in environment");
 }
 
+console.log("REDIS_URL exists:", !!redisUrl);
+console.log("REDIS_URL value:", redisUrl);
+
 const connection = new Redis(redisUrl, {
   maxRetriesPerRequest: null,
 });

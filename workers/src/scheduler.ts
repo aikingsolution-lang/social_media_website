@@ -4,20 +4,25 @@ import { Queue } from "bullmq";
 import Redis from "ioredis";
 
 const redisUrl = process.env.REDIS_URL;
-const redisHost = process.env.REDIS_HOST || "localhost";
-const redisPort = parseInt(process.env.REDIS_PORT || "6379", 10);
-const redisPassword = process.env.REDIS_PASSWORD || undefined;
 
-const connection = redisUrl
-  ? new Redis(redisUrl, {
-      maxRetriesPerRequest: null,
-    })
-  : new Redis({
-      host: redisHost,
-      port: redisPort,
-      password: redisPassword,
-      maxRetriesPerRequest: null,
-    });
+if (!redisUrl) {
+  throw new Error("REDIS_URL is not set in environment");
+}
+
+console.log("REDIS_URL exists:", !!redisUrl);
+console.log("REDIS_URL value:", redisUrl);
+
+const connection = new Redis(redisUrl, {
+  maxRetriesPerRequest: null,
+});
+
+connection.on("connect", () => {
+  console.log("✅ Scheduler Redis connected");
+});
+
+connection.on("error", (err) => {
+  console.error("❌ Scheduler Redis error:", err.message);
+});
 
 const postQueue = new Queue("post-publishing", { connection });
 
