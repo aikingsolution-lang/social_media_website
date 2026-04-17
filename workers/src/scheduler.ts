@@ -2,6 +2,7 @@ import cron from "node-cron";
 import prisma from "database/src/index";
 import { Queue } from "bullmq";
 import Redis from "ioredis";
+import express from "express";
 
 const redisUrl = process.env.REDIS_URL;
 
@@ -26,7 +27,6 @@ const postQueue = new Queue("post-publishing", { connection });
 export const startScheduler = () => {
   console.log("🕒 Scheduler started (runs every minute)");
   console.log("REDIS_URL exists:", !!redisUrl);
-  console.log("REDIS_URL value:", redisUrl);
 
   cron.schedule("* * * * *", async () => {
     try {
@@ -99,9 +99,7 @@ export const startScheduler = () => {
 
           await postQueue.add(
             "publish-post",
-            {
-              scheduledPostId: post.id,
-            },
+            { scheduledPostId: post.id },
             {
               jobId: `post-${post.id}`,
               removeOnComplete: true,
@@ -134,5 +132,20 @@ export const startScheduler = () => {
     }
   });
 };
-// START SCHEDULER AUTOMATICALLY
+
+const app = express();
+const port = Number(process.env.PORT || 10000);
+
+app.get("/", (_req, res) => {
+  res.send("Worker is running");
+});
+
+app.get("/health", (_req, res) => {
+  res.json({ ok: true, service: "worker" });
+});
+
+app.listen(port, () => {
+  console.log(`[worker]: Health server running on port ${port}`);
+});
+
 startScheduler();
