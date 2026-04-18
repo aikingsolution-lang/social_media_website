@@ -2,13 +2,15 @@ import dotenv from "dotenv";
 import path from "path";
 import express from "express";
 
-// Load .env from project root
+// Load .env first
 dotenv.config({
   path: path.resolve(__dirname, "../../.env"),
 });
 
-// Start BullMQ worker
-import "./postWorker";
+console.log("REDIS_URL exists:", !!process.env.REDIS_URL);
+
+// Load worker after env
+require("./postWorker");
 
 const app = express();
 const port = Number(process.env.PORT || 10000);

@@ -148,7 +148,7 @@ app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
 
   try {
-    startScheduler();
+    //startScheduler();
     console.log("✅ Scheduler started from API server");
   } catch (error) {
     console.error("❌ Failed to start scheduler:", error);
