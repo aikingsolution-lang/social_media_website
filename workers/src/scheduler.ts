@@ -22,16 +22,55 @@ connection.on("error", (err) => {
   console.error("❌ Scheduler Redis error:", err.message);
 });
 
-const postQueue = new Queue("post-publishing", { connection });
+export const postQueue = new Queue("post-publishing", {
+  connection,
+});
+
+let schedulerStarted = false;
+let healthServerStarted = false;
+
+function startHealthServer() {
+  if (healthServerStarted) return;
+
+  const app = express();
+  const port = Number(process.env.PORT || 10000);
+
+  app.get("/", (_req, res) => {
+    res.send("Scheduler service is running");
+  });
+
+  app.get("/health", (_req, res) => {
+    res.json({
+      ok: true,
+      service: "scheduler",
+      time: new Date().toISOString(),
+    });
+  });
+
+  app.listen(port, () => {
+    console.log(`[scheduler]: Health server running on port ${port}`);
+  });
+
+  healthServerStarted = true;
+}
 
 export const startScheduler = () => {
+  if (schedulerStarted) {
+    console.log("⚠️ Scheduler already started. Skipping duplicate start.");
+    return;
+  }
+
+  schedulerStarted = true;
+
   console.log("🕒 Scheduler started (runs every minute)");
   console.log("REDIS_URL exists:", !!redisUrl);
 
-  cron.schedule("* * * * *", async () => {
-    try {
-      const now = new Date();
+  startHealthServer();
 
+  cron.schedule("* * * * *", async () => {
+    const now = new Date();
+
+    try {
       console.log(`[Scheduler] Checking scheduled posts at ${now.toISOString()}`);
 
       const duePosts = await prisma.scheduledPost.findMany({
@@ -45,6 +84,7 @@ export const startScheduler = () => {
         include: {
           account: true,
           video: true,
+          campaign: true,
         },
         orderBy: {
           scheduledTime: "asc",
@@ -82,20 +122,22 @@ export const startScheduler = () => {
             },
           });
 
-          if (!current || current.status !== "PENDING" || current.isDeleted) {
-            console.log(
-              `[Scheduler] Skip ${post.id} → status = ${current?.status}`
-            );
+          if (!current) {
+            console.log(`[Scheduler] Skip ${post.id} → post no longer exists`);
             continue;
           }
 
-          await prisma.scheduledPost.update({
-            where: { id: post.id },
-            data: {
-              status: "QUEUED",
-              failedReason: null,
-            },
-          });
+          if (current.isDeleted) {
+            console.log(`[Scheduler] Skip ${post.id} → post is deleted`);
+            continue;
+          }
+
+          if (current.status !== "PENDING") {
+            console.log(
+              `[Scheduler] Skip ${post.id} → current status is ${current.status}`
+            );
+            continue;
+          }
 
           await postQueue.add(
             "publish-post",
@@ -112,40 +154,38 @@ export const startScheduler = () => {
             }
           );
 
+          await prisma.scheduledPost.update({
+            where: { id: post.id },
+            data: {
+              status: "QUEUED",
+              failedReason: null,
+            },
+          });
+
           console.log(
             `📤 Queued scheduled post ${post.id} → ${post.account.platform}`
           );
         } catch (postError: any) {
           console.error(`❌ Queue error for ${post.id}:`, postError.message);
 
-          await prisma.scheduledPost.update({
-            where: { id: post.id },
-            data: {
-              status: "FAILED",
-              failedReason: postError.message || "Queue failed",
-            },
-          });
+          try {
+            await prisma.scheduledPost.update({
+              where: { id: post.id },
+              data: {
+                status: "FAILED",
+                failedReason: postError.message || "Queue failed",
+              },
+            });
+          } catch (dbError: any) {
+            console.error(
+              `❌ Failed to update DB for ${post.id}:`,
+              dbError.message
+            );
+          }
         }
       }
-    } catch (error) {
-      console.error("❌ Scheduler global error:", error);
+    } catch (error: any) {
+      console.error("❌ Scheduler global error:", error.message || error);
     }
   });
 };
-
-const app = express();
-const port = Number(process.env.PORT || 10000);
-
-app.get("/", (_req, res) => {
-  res.send("Worker is running");
-});
-
-app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "worker" });
-});
-
-app.listen(port, () => {
-  console.log(`[worker]: Health server running on port ${port}`);
-});
-
-startScheduler();

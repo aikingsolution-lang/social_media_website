@@ -3,15 +3,20 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "worker": "ts-node --transpile-only src/workerRunner.ts",
+    "scheduler": "ts-node --transpile-only src/schedulerRunner.ts"
   },
   "dependencies": {
     "bullmq": "^4.12.0",
     "database": "^1.0.0",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
     "ioredis": "^5.3.2",
     "node-cron": "^4.2.1"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^20.10.0",
     "@types/node-cron": "^3.0.11",
     "ts-node": "^10.9.1",

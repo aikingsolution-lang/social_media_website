@@ -6,8 +6,7 @@ dotenv.config({
   path: path.resolve(__dirname, "../../.env"),
 });
 
-import "./postWorker";
 import { startScheduler } from "./scheduler";
 
-console.log("Starting Social Automation Background Services (local only)...");
+console.log("Starting Scheduler Service...");
 startScheduler();
