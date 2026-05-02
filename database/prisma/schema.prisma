@@ -60,7 +60,11 @@ model SocialAccount {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@unique([userId, platform, platformUserId])
+  @@index([userId])
+  @@index([platform])
+  @@index([status])
 }
 
 model Campaign {

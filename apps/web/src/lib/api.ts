@@ -370,3 +370,32 @@ export const connectPlatform = (platform: string) => {
         window.location.href = `${API_BASE_URL}/api/oauth/${platform}/connect?token=${getToken()}`;
     }
 };
+export async function createMultiAccountPost(data: {
+  accountIds: string[];
+  caption: string;
+  mediaUrl?: string;
+  mediaUrls?: string[];
+  scheduledTime?: string;
+}) {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/multi-posts`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    }
+  );
+
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(result.message || "Failed to create post");
+  }
+
+  return result;
+}

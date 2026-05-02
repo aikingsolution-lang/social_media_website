@@ -27,6 +27,7 @@ import webhookRoutes from "./routes/webhook.routes";
 import uploadRoutes from "./routes/upload.routes";
 import threadsRoutes from "./routes/threads.routes";
 import scheduledInstagramRoutes from "./routes/scheduledInstagram.routes";
+import multiAccountPostRoutes from "./routes/multiAccountPost.routes";
 
 // ✅ Scheduler import
 import { startScheduler } from "../../../workers/src/scheduler";
@@ -80,6 +81,7 @@ app.use("/api/campaigns", campaignRouter);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/oauth", oauthRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/multi-posts", multiAccountPostRoutes);
 
 /**
  * Scheduled post routes
