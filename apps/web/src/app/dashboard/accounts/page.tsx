@@ -207,8 +207,8 @@ function AccountsPageContent() {
                         account.status === "active"
                           ? "Connected"
                           : account.status === "needs_reconnect"
-                          ? "Reconnect Required"
-                          : account.status || "Pending"
+                          ? "Expired"
+                          : "Pending"
                       }
                       followers={account.followers || "0"}
                       onDisconnect={handleDisconnect}
