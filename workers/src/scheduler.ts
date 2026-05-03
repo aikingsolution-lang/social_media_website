@@ -33,8 +33,8 @@ function startHealthServer() {
   if (healthServerStarted) return;
 
   const app = express();
-  //const port = Number(process.env.PORT || 10000);
-  const port = Number(process.env.WORKER_PORT || 10001);
+  const port = Number(process.env.PORT || 10000);
+  //const port = Number(process.env.WORKER_PORT || 10001);
   app.get("/", (_req, res) => {
     res.send("Scheduler service is running");
   });
