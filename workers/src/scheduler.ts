@@ -33,8 +33,7 @@ function startHealthServer() {
   if (healthServerStarted) return;
 
   const app = express();
-  const port = Number(process.env.PORT || 10000);
-  //const port = Number(process.env.WORKER_PORT || 10001);
+  const port = Number(process.env.SCHEDULER_PORT || process.env.WORKER_PORT || 10001);
   app.get("/", (_req, res) => {
     res.send("Scheduler service is running");
   });
@@ -47,8 +46,12 @@ function startHealthServer() {
     });
   });
 
-  app.listen(port, "0.0.0.0", () => {
+  const server = app.listen(port, "0.0.0.0", () => {
     console.log(`[scheduler]: Health server running on port ${port}`);
+  });
+
+  server.on("error", (err: any) => {
+    console.error(`❌ Scheduler health server failed to start on port ${port}:`, err.message);
   });
 
   healthServerStarted = true;
