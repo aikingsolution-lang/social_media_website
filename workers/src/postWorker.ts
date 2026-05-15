@@ -315,6 +315,17 @@ export const postWorker = new Worker(
               error?.message?.includes("401") ||
               error?.message?.toLowerCase?.().includes("invalid credentials");
 
+            const isLocationError = 
+              error?.response?.status === 400 &&
+              error?.response?.data?.error?.status === "FAILED_PRECONDITION" &&
+              error?.response?.data?.error?.message?.includes("location");
+
+            if (isLocationError) {
+              throw new Error(
+                `YouTube location restriction: ${error.response.data.error.message}. Ensure your YouTube account is set up for API uploads in Settings > Advanced Settings.`
+              );
+            }
+
             if (!isAuthError || !account.refreshToken) {
               throw error;
             }
